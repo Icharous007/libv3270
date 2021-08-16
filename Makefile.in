@@ -1,0 +1,502 @@
+#
+# "Software pw3270, desenvolvido com base nos códigos fontes do WC3270  e X3270
+# (Paul Mattes Paul.Mattes@usa.net), de emulação de terminal 3270 para acesso a
+# aplicativos mainframe. Registro no INPI sob o nome G3270.
+#
+# Copyright (C) <2008> <Banco do Brasil S.A.>
+#
+# Este programa é software livre. Você pode redistribuí-lo e/ou modificá-lo sob
+# os termos da GPL v.2 - Licença Pública Geral  GNU,  conforme  publicado  pela
+# Free Software Foundation.
+#
+# Este programa é distribuído na expectativa de  ser  útil,  mas  SEM  QUALQUER
+# GARANTIA; sem mesmo a garantia implícita de COMERCIALIZAÇÃO ou  de  ADEQUAÇÃO
+# A QUALQUER PROPÓSITO EM PARTICULAR. Consulte a Licença Pública Geral GNU para
+# obter mais detalhes.
+#
+# Você deve ter recebido uma cópia da Licença Pública Geral GNU junto com este
+# programa;  se  não, escreva para a Free Software Foundation, Inc., 59 Temple
+# Place, Suite 330, Boston, MA, 02111-1307, USA
+#
+# Contatos:
+#
+# perry.werneck@gmail.com	(Alexandre Perry de Souza Werneck)
+# erico.mendonca@gmail.com	(Erico Mascarenhas de Mendonça)
+#
+
+#---[ Library configuration ]------------------------------------------------------------
+
+LIBNAME=libv@LIB3270_NAME@
+
+SOURCES= \
+	$(wildcard src/terminal/*.c) \
+	$(wildcard src/terminal/@OSNAME@/*.rc) \
+	$(wildcard src/terminal/@OSNAME@/*.c) \
+	$(wildcard src/filetransfer/*.c) \
+	$(wildcard src/trace/*.c) \
+	$(wildcard src/dialogs/*.c) \
+	$(wildcard src/dialogs/@OSNAME@/*.c) \
+	$(wildcard src/dialogs/print/*.c)
+
+TEST_SOURCES= \
+	$(wildcard src/testprogram/*.c)
+
+#---[ Tools ]----------------------------------------------------------------------------
+
+CC=@CC@
+HOST_CC=@HOST_CC@
+LD=@CC@
+LN_S=@LN_S@
+MKDIR=@MKDIR_P@
+INSTALL=@INSTALL@
+INSTALL_DATA=@INSTALL_DATA@
+INSTALL_PROGRAM=@INSTALL_PROGRAM@
+XGETTEXT=@XGETTEXT@
+MSGCAT=@MSGCAT@
+WINDRES=@WINDRES@
+AR=@AR@
+VALGRIND=@VALGRIND@
+GENMARSHAL=@GENMARSHAL@
+CONVERT=@CONVERT@
+OPTIPNG=@OPTIPNG@
+ZIP=@ZIP@
+
+#---[ Paths ]----------------------------------------------------------------------------
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+sbindir=@sbindir@
+libdir=@libdir@
+includedir=@includedir@
+datarootdir=@datarootdir@
+localedir=@localedir@
+docdir=@docdir@
+sysconfdir=@sysconfdir@
+
+BASEDIR=@BASEDIR@
+
+POTDIR=$(BASEDIR)/.pot
+
+OBJDIR=$(BASEDIR)/.obj/$(LIBNAME)
+OBJDBG=$(OBJDIR)/Debug
+OBJRLS=$(OBJDIR)/Release
+
+BINDIR=$(BASEDIR)/.bin
+BINDBG=$(BINDIR)/Debug
+BINRLS=$(BINDIR)/Release
+
+#---[ Rules ]----------------------------------------------------------------------------
+
+DEPENDS= \
+	Makefile \
+	src/include/*.h \
+	src/include/v3270/*.h \
+	src/filetransfer/marshal.h \
+	src/filetransfer/private.h \
+	src/terminal/marshal.h \
+	src/terminal/private.h
+
+CFLAGS= \
+	@CFLAGS@ \
+	-g \
+	-Isrc/include \
+	-DBUILD_DATE=`date +%Y%m%d` \
+	@LIB3270_CFLAGS@ \
+	@GTK_CFLAGS@ \
+	@GLIB_CFLAGS@
+
+LIBS= \
+	@LIBS@ \
+	@GTK_LIBS@ \
+	@GLIB_LIBS@ \
+	@LIBICONV@ \
+	@INTL_LIBS@ \
+	@LIB3270_LIBS@
+
+#---[ Debug Rules ]----------------------------------------------------------------------
+
+$(OBJDBG)/%.o: \
+	%.c \
+	$(DEPENDS)
+
+	@echo $< ...
+	@$(MKDIR) `dirname $@`
+
+	@$(CC) \
+		$(CFLAGS) \
+		-Wall -Wextra -fstack-check \
+		-DDEBUG=1 \
+		-o $@ -c $<
+
+$(OBJDBG)/%.o: \
+	%.rc
+
+	@echo $< ...
+	@$(MKDIR) `dirname $@`
+	@$(WINDRES) $< -O coff -o $@
+
+#---[ Release Rules ]--------------------------------------------------------------------
+
+$(OBJRLS)/%.o: \
+	%.c \
+	$(DEPENDS)
+
+	@echo $< ...
+	@$(MKDIR) `dirname $@`
+	@$(CC) \
+		$(CFLAGS) \
+		-DNDEBUG=1 \
+		-o $@ -c $<
+
+$(OBJRLS)/%.o: \
+	%.rc
+
+	@echo $< ...
+	@$(MKDIR) `dirname $@`
+	@$(WINDRES) $< -O coff -o $@
+
+#---[ Misc Rules ]-----------------------------------------------------------------------
+
+$(POTDIR)/$(LIBNAME)/%.pot: \
+	%.c
+
+	@echo $(notdir $@) ...
+	@$(MKDIR) `dirname $@`
+	@$(XGETTEXT) \
+		--language=C \
+		--keyword=_ \
+		--keyword=N_ \
+		--keyword=MSG_:2 \
+		--output=$@ \
+		$<
+	@touch $@
+
+$(POTDIR)/$(LIBNAME)/%.pot: \
+	%.rc
+
+	@echo $< ...
+	@$(MKDIR) `dirname $@`
+	@touch $@
+
+
+#---[ Marshal Targets ]------------------------------------------------------------------
+
+src/terminal/marshal.h: \
+	src/terminal/marshal
+
+	@echo $@ ...
+	@$(MKDIR) `dirname $@`
+
+	@$(GENMARSHAL) --prefix=v3270 --header $< > $@
+
+$(OBJDIR)/marshal/v3270.c: \
+	src/terminal/marshal
+
+	@echo $@ ...
+	@$(MKDIR) `dirname $@`
+
+	@$(GENMARSHAL) --prefix=v3270 --body $< > $@
+
+
+src/filetransfer/marshal.h: \
+	src/filetransfer/marshal
+
+	@echo $@ ...
+	@$(MKDIR) `dirname $@`
+
+	@$(GENMARSHAL) --prefix=v3270ft --header $< > $@
+
+$(OBJDIR)/marshal/v3270ft.c: \
+	src/filetransfer/marshal
+
+	@echo $@ ...
+	@$(MKDIR) `dirname $@`
+
+	@$(GENMARSHAL) --prefix=v3270ft --body $< > $@
+
+$(OBJDIR)/marshal/%.o: \
+	$(OBJDIR)/marshal/%.c \
+	$(DEPENDS)
+
+	@echo $< ...
+	@$(MKDIR) `dirname $@`
+
+	@$(CC) \
+		$(CFLAGS) \
+		-Wall -Wextra -fstack-check \
+		-DDEBUG=1 \
+		-o $@ -c $<
+
+
+#---[ Release Targets ]------------------------------------------------------------------
+
+all: \
+	$(BINRLS)/$(LIBNAME)@DLLEXT@ \
+	$(BINRLS)/static/$(LIBNAME).a \
+	$(POTDIR)/$(LIBNAME).pot
+
+x: \
+	$(BINDIR)/icons/16x16/logo.png \
+	$(BINDIR)/icons/22x22/logo.png
+
+
+
+Release: \
+	$(BINRLS)/$(LIBNAME)@DLLEXT@ \
+	$(BINRLS)/static/$(LIBNAME).a
+
+$(BINRLS)/$(LIBNAME)@DLLEXT@: \
+	$(BINRLS)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@
+
+	@echo $< ...
+	@rm -f $@
+	@$(LN_S) \
+		$^ \
+		$@
+
+$(BINRLS)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@: \
+	$(BINRLS)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@.@PACKAGE_MINOR_VERSION@
+
+	@rm -f $@
+	@$(LN_S) \
+		$^ \
+		$@
+
+$(BINRLS)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@.@PACKAGE_MINOR_VERSION@: \
+	$(foreach SRC, $(basename $(SOURCES)), $(OBJRLS)/$(SRC).o) \
+	$(OBJDIR)/marshal/v3270.o \
+	$(OBJDIR)/marshal/v3270ft.o
+
+	@$(MKDIR) `dirname $@`
+	@echo $< ...
+	@$(LD) \
+		@DLL_LDFLAGS@ \
+		-o $@ \
+		$(LDFLAGS) \
+		$(foreach SRC, $(basename $(SOURCES)), $(OBJRLS)/$(SRC).o) \
+		$(OBJDIR)/marshal/v3270.o \
+		$(OBJDIR)/marshal/v3270ft.o \
+		-L$(BINRLS) \
+		$(LIBS)
+
+$(BINRLS)/static/$(LIBNAME).a: \
+	$(foreach SRC, $(basename $(SOURCES)), $(OBJRLS)/$(SRC).o)
+
+	@echo $@ ...
+	@$(MKDIR) `dirname $@`
+	@$(AR) rcs $@ $^
+
+
+#---[ Install Targets ]------------------------------------------------------------------
+
+install: \
+	install-shared \
+	install-static \
+	install-glade \
+	install-dev
+
+install-shared: \
+	$(BINRLS)/$(LIBNAME)@DLLEXT@
+
+	# Install library
+	@mkdir -p $(DESTDIR)$(libdir)
+
+	@$(INSTALL_PROGRAM) \
+		$(BINRLS)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@.@PACKAGE_MINOR_VERSION@ \
+		$(DESTDIR)$(libdir)
+
+
+	@$(LN_S) \
+		$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@.@PACKAGE_MINOR_VERSION@ \
+		$(DESTDIR)$(libdir)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@
+
+	@$(LN_S) \
+		$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@ \
+		$(DESTDIR)$(libdir)/$(LIBNAME)@DLLEXT@
+
+	# Install default configs
+	@mkdir -p $(DESTDIR)$(datarootdir)/pw3270
+
+install-static: \
+	$(BINRLS)/static/$(LIBNAME).a
+
+	# Install static library
+	@$(INSTALL_DATA) \
+		$(BINRLS)/static/$(LIBNAME).a \
+		$(DESTDIR)$(libdir)/$(LIBNAME)-static.a
+
+install-dev: \
+	$(POTDIR)/$(LIBNAME).pot
+
+	@mkdir -p $(DESTDIR)$(includedir)/v3270
+
+	@$(INSTALL_DATA) \
+		src/include/v3270/*.h \
+		$(DESTDIR)$(includedir)/v3270
+
+	@$(INSTALL_DATA) \
+		src/include/v3270.h \
+		$(DESTDIR)$(includedir)/v3270.h
+
+	# Install PKG-CONFIG files
+	@mkdir -p $(DESTDIR)$(libdir)/pkgconfig
+	@$(INSTALL_DATA) \
+		libv3270.pc \
+		$(DESTDIR)$(libdir)/pkgconfig/libv3270.pc
+
+	# Install translation files
+	@$(MKDIR) $(DESTDIR)$(datarootdir)/pw3270/pot
+	@$(INSTALL_DATA) $(POTDIR)/$(LIBNAME).pot $(DESTDIR)$(datarootdir)/pw3270/pot/$(LIBNAME).pot
+
+install-glade:
+
+	@mkdir -p $(DESTDIR)$(datarootdir)/glade/catalogs
+	@mkdir -p $(DESTDIR)$(datarootdir)/glade/pixmaps/hicolor/16x16/actions
+	@mkdir -p $(DESTDIR)$(datarootdir)/glade/pixmaps/hicolor/22x22/actions
+
+	@$(INSTALL_DATA) \
+		glade/v3270.xml \
+		$(DESTDIR)$(datarootdir)/glade/catalogs/v3270.xml
+
+	@$(INSTALL_DATA) \
+		branding/icon-16x16.png \
+		$(DESTDIR)$(datarootdir)/glade/pixmaps/hicolor/16x16/actions/widget-v3270-terminal.png
+
+	@$(INSTALL_DATA) \
+		branding/icon-22x22.png \
+		$(DESTDIR)$(datarootdir)/glade/pixmaps/hicolor/22x22/actions/widget-v3270-terminal.png
+
+#---[ Misc Targets ]---------------------------------------------------------------------
+
+$(POTDIR)/$(LIBNAME).pot: \
+	$(foreach SRC, $(basename $(SOURCES)), $(POTDIR)/$(LIBNAME)/$(SRC).pot)
+
+	@rm -f $@
+	@mkdir -p `dirname $@`
+	@$(MSGCAT) --sort-output $^ > $@
+
+locale: \
+	$(POTDIR)/$(LIBNAME).pot
+
+
+#---[ Debug Targets ]--------------------------------------------------------------------
+
+Debug: \
+	$(BINDBG)/$(LIBNAME)@EXEEXT@
+
+$(BINDBG)/$(LIBNAME)@EXEEXT@: \
+	$(foreach SRC, $(basename $(TEST_SOURCES)), $(OBJDBG)/$(SRC).o) \
+	$(BINDBG)/$(LIBNAME)@DLLEXT@
+
+	@$(MKDIR) `dirname $@`
+	@echo $< ...
+	@$(LD) \
+		-o $@ \
+		$^ \
+		-L$(BINDBG) \
+		-Wl,-rpath,$(BINDBG) \
+		$(LDFLAGS) \
+		$(LIBS) \
+		-lv@LIB3270_NAME@
+
+run: \
+	$(BINDBG)/$(LIBNAME)@EXEEXT@
+
+	@LD_LIBRARY_PATH=$(BINDBG) \
+		$(BINDBG)/$(LIBNAME)@EXEEXT@
+
+mem-check: \
+	$(BINDBG)/$(LIBNAME)@EXEEXT@
+
+ifeq ($(VALGRIND),no)
+
+	@LD_LIBRARY_PATH=$(BINDBG) \
+		$(BINDBG)/$(LIBNAME)@EXEEXT@
+
+else
+	@touch valgrind.suppression
+
+	@LD_LIBRARY_PATH=$(BINDBG) \
+		$(VALGRIND) --leak-check=full --track-origins=yes --gen-suppressions=all --suppressions=valgrind.suppression \
+			$(BINDBG)/$(LIBNAME)@EXEEXT@
+endif
+
+
+$(BINDBG)/$(LIBNAME)@DLLEXT@: \
+	$(BINDBG)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@
+
+	@echo $< ...
+	@rm -f $@
+	@$(LN_S) \
+		$^ \
+		$@
+
+$(BINDBG)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@: \
+	$(BINDBG)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@.@PACKAGE_MINOR_VERSION@
+
+	@rm -f $@
+	@$(LN_S) \
+		$^ \
+		$@
+
+$(BINDBG)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@.@PACKAGE_MINOR_VERSION@: \
+	$(foreach SRC, $(basename $(SOURCES)), $(OBJDBG)/$(SRC).o) \
+	$(OBJDIR)/marshal/v3270.o \
+	$(OBJDIR)/marshal/v3270ft.o
+
+	@$(MKDIR) `dirname $@`
+	@echo $< ...
+	@$(LD) \
+		-shared -Wl,-soname,$(@F) \
+		-o $@ \
+		-L$(BINDBG) \
+		$(LDFLAGS) \
+		$(foreach SRC, $(basename $(SOURCES)), $(OBJDBG)/$(SRC).o) \
+		$(OBJDIR)/marshal/v3270.o \
+		$(OBJDIR)/marshal/v3270ft.o \
+		$(LIBS)
+
+zip-debug: \
+	$(LIBNAME)-debug-@PACKAGE_VERSION@-@host_cpu@.zip
+
+$(LIBNAME)-debug-@PACKAGE_VERSION@-@host_cpu@.zip: \
+	$(BINDBG)/$(LIBNAME)@EXEEXT@ \
+	$(BINDBG)/$(LIBNAME)@DLLEXT@.@PACKAGE_MAJOR_VERSION@.@PACKAGE_MINOR_VERSION@
+
+	@$(ZIP) -9 -j $@ $^
+
+
+#---[ Clean Targets ]--------------------------------------------------------------------
+
+clean: \
+	cleanDebug \
+	cleanRelease
+
+	@rm -fr $(BASEDIR)/.tmp/$(LIBNAME)
+	@rm -fr $(POTDIR)/$(LIBNAME)
+	@rm -fr src/include/marshal
+
+cleanDebug:
+
+	@rm -fr $(OBJDBG)
+	@rm -fr $(BINDBG)
+	@rm -fr $(OBJDIR)/marshal
+	@rm -f src/terminal/marshal.h
+	@rm -f src/filetransfer/marshal.h
+
+cleanRelease:
+
+	@rm -fr $(OBJRLS)
+	@rm -fr $(BINRLS)
+	@rm -fr $(POTDIR)
+	@rm -fr $(OBJDIR)/marshal
+	@rm -f src/terminal/marshal.h
+	@rm -f src/filetransfer/marshal.h
+	@rm -f lib$(LIBNAME).pot
+
+clean: \
+	cleanDebug \
+	cleanRelease
+
+

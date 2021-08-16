@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="3270 terminal widget for gtk" />
+		<Option makefile_is_custom="1" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output=".bin/Debug/libv3270" prefix_auto="1" extension_auto="1" />
+				<Option object_output=".obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-DDEBUG=1" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output=".bin/Release/v3270" imp_lib="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).a" def_file="$(TARGET_OUTPUT_DIR)$(TARGET_OUTPUT_BASENAME).def" prefix_auto="1" extension_auto="1" />
+				<Option object_output=".obj/Release/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-DNDEBUG=1" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fPIC" />
+			<Add option="`pkg-config --cflags gtk+-3.0 lib3270`" />
+			<Add directory="src/include" />
+		</Compiler>
+		<Linker>
+			<Add option="`pkg-config --libs gtk+-3.0 lib3270`" />
+			<Add option="-fPIC" />
+		</Linker>
+		<Unit filename="configure.ac" />
+		<Unit filename="src/dialogs/colors.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/colorscheme.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/commondialog.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/fontselect.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/hostselect.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/linux/select.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/print/begin.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/print/draw.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/print/print.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/print/private.h" />
+		<Unit filename="src/dialogs/private.h" />
+		<Unit filename="src/dialogs/security.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/settingsdialog.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/tools.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/transfer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/dialogs/windows/select.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/activity.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/activitylist.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/filelist.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/get.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/load.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/marshal.h" />
+		<Unit filename="src/filetransfer/misc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/private.h" />
+		<Unit filename="src/filetransfer/save.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/set.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/settings.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/tables.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/transfer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/v3270ft.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/v3270ftprogress.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/filetransfer/worker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/include/config.h" />
+		<Unit filename="src/include/config.h.in" />
+		<Unit filename="src/include/hostselect.h" />
+		<Unit filename="src/include/internals.h" />
+		<Unit filename="src/include/v3270.h" />
+		<Unit filename="src/include/v3270/accessible.h" />
+		<Unit filename="src/include/v3270/colorscheme.h" />
+		<Unit filename="src/include/v3270/filetransfer.h" />
+		<Unit filename="src/include/v3270/ftprogress.h" />
+		<Unit filename="src/include/v3270/print.h" />
+		<Unit filename="src/include/v3270/trace.h" />
+		<Unit filename="src/terminal/accessible.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/blink.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/callbacks.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/charset.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/colors.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/draw.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/font.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/iocallback.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/keyboard.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/linux/iosource.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/marshal.h" />
+		<Unit filename="src/terminal/oia.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/private.h" />
+		<Unit filename="src/terminal/properties.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/security.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/selection.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/widget.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/windows/iosource.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/terminal/windows/resources.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="src/testprogram/testprogram.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/trace/exec.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/trace/widget.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/v3270/private.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
